@@ -82,7 +82,7 @@ The main chart shows the full month, day by day:
 - The blue dashed line shows projected accumulated rainfall.
 - The gray dotted line shows the historical monthly normal.
 
-Use the day-by-day slider to inspect one specific day of the month. The dashboard cards below the slider update to show that day's observed rainfall, observed accumulated total, forecast rainfall, and projected accumulated total.
+The x-axis always shows every day of the selected month. Hover over any day in the chart to see observed daily rain, observed accumulated rain, forecast daily rain, and projected accumulated rain.
 
 ## 6. Known limitations
 

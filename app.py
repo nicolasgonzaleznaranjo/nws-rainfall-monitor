@@ -64,16 +64,13 @@ def inject_css() -> None:
             padding: 0.85rem 1rem;
             margin: 0.7rem 0 1rem;
         }
-        .kpi-grid, .detail-grid {
+        .kpi-grid {
             display: grid;
             gap: 1rem;
             margin: 1rem 0 1.25rem;
         }
         .kpi-grid {
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        }
-        .detail-grid {
-            grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
         }
         .kpi-card {
             background: linear-gradient(180deg, #121925 0%, #0D131D 100%);
@@ -186,9 +183,6 @@ def inject_css() -> None:
             color: #FF6B6B;
             border-color: #FF6969;
         }
-        div[data-testid="stSlider"] {
-            padding: 0.15rem 0 0.75rem;
-        }
         @media (max-width: 720px) {
             .block-container {
                 padding: 1.25rem 0.75rem 2rem;
@@ -200,7 +194,7 @@ def inject_css() -> None:
                 font-size: 0.9rem;
                 line-height: 1.45;
             }
-            .kpi-grid, .detail-grid {
+            .kpi-grid {
                 grid-template-columns: 1fr;
                 gap: 0.75rem;
             }
@@ -219,16 +213,16 @@ def inject_css() -> None:
 
 def kpi_card_html(label: str, value: str, sub: str = "", accent: str = "") -> str:
     accent_class = f" accent-{accent}" if accent else ""
-    return f"""
-    <div class="kpi-card{accent_class}">
-        <div class="kpi-label">{html.escape(label)}</div>
-        <div class="kpi-value">{html.escape(value)}</div>
-        <div class="kpi-sub">{html.escape(sub)}</div>
-    </div>
-    """
+    return (
+        f'<div class="kpi-card{accent_class}">'
+        f'<div class="kpi-label">{html.escape(label)}</div>'
+        f'<div class="kpi-value">{html.escape(value)}</div>'
+        f'<div class="kpi-sub">{html.escape(sub)}</div>'
+        "</div>"
+    )
 
 
-def render_card_grid(cards: list[dict], class_name: str = "kpi-grid") -> None:
+def render_card_grid(cards: list[dict]) -> None:
     card_html = "".join(
         kpi_card_html(
             card["label"],
@@ -238,19 +232,13 @@ def render_card_grid(cards: list[dict], class_name: str = "kpi-grid") -> None:
         )
         for card in cards
     )
-    st.markdown(f'<div class="{class_name}">{card_html}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="kpi-grid">{card_html}</div>', unsafe_allow_html=True)
 
 
 def format_inches(value: Optional[float]) -> str:
     if value is None or pd.isna(value):
         return "N/A"
     return f'{value:.2f}"'
-
-
-def format_table_inches(value: Optional[float]) -> str:
-    if value is None or pd.isna(value):
-        return "-"
-    return f"{float(value):.2f}"
 
 
 @st.cache_data(ttl=900, show_spinner=False)
@@ -346,35 +334,6 @@ def make_chart(
     return fig
 
 
-def prepare_daily_table(frame: pd.DataFrame) -> pd.DataFrame:
-    table = frame.copy()
-    table = table.rename(
-        columns={
-            "day": "Day",
-            "actual_daily": "Observed Daily",
-            "forecast_daily": "Forecast Daily",
-            "actual_cumulative": "Observed Cumulative",
-            "forecast_cumulative": "Forecast Cumulative",
-        }
-    )
-    for column in [
-        "Observed Daily",
-        "Forecast Daily",
-        "Observed Cumulative",
-        "Forecast Cumulative",
-    ]:
-        table[column] = table[column].apply(format_table_inches)
-    return table[
-        [
-            "Day",
-            "Observed Daily",
-            "Observed Cumulative",
-            "Forecast Daily",
-            "Forecast Cumulative",
-        ]
-    ]
-
-
 def main() -> None:
     inject_css()
     st.title("NWS Rainfall Monitor")
@@ -436,7 +395,6 @@ def main() -> None:
 
     actuals = actuals_result["daily"]
     has_actuals = not actuals.empty
-    has_forecast = not forecast["daily"].empty
     historical_avg = historical["value"]
     observed_total = accumulated_rainfall(actuals) if has_actuals else None
     observed_today = accumulated_today(actuals, today) if has_actuals and is_current_month else None
@@ -495,44 +453,6 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    selected_day = st.slider(
-        "Day-by-day navigator",
-        min_value=1,
-        max_value=selected_month_end,
-        value=min(today_day, selected_month_end),
-        step=1,
-    )
-    day_row = chart_frame.loc[chart_frame["day"] == selected_day].iloc[0]
-    render_card_grid(
-        [
-            {
-                "label": f"Day {selected_day} Observed",
-                "value": format_inches(float(day_row["actual_daily"]) if has_actuals else None),
-                "sub": "Rain recorded on that day",
-                "accent": "red",
-            },
-            {
-                "label": f"Day {selected_day} Observed Total",
-                "value": format_inches(day_row["actual_cumulative"]),
-                "sub": "Accumulated through that day",
-                "accent": "red",
-            },
-            {
-                "label": f"Day {selected_day} Forecast",
-                "value": format_inches(float(day_row["forecast_daily"]) if has_forecast else None),
-                "sub": "Expected rain on that day",
-                "accent": "blue",
-            },
-            {
-                "label": f"Day {selected_day} Projected Total",
-                "value": format_inches(day_row["forecast_cumulative"]),
-                "sub": "Projected accumulation if available",
-                "accent": "blue",
-            },
-        ],
-        class_name="detail-grid",
-    )
-
     chart = make_chart(chart_frame, today_day, selected_month_end, historical_avg)
     if chart is not None:
         st.plotly_chart(chart, use_container_width=True, config={"displayModeBar": False})
@@ -543,9 +463,6 @@ def main() -> None:
         )
         fallback_chart = chart_frame.set_index("day")[["actual_cumulative", "forecast_cumulative"]]
         st.line_chart(fallback_chart)
-
-    with st.expander("Daily Rainfall Table"):
-        st.dataframe(prepare_daily_table(chart_frame), use_container_width=True, hide_index=True)
 
     with st.expander("Market Rules"):
         st.markdown(
