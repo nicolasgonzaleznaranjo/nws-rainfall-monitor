@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import calendar
-from datetime import datetime
+from datetime import date, datetime
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -160,6 +161,12 @@ def kpi_card(label: str, value: str, sub: str = "") -> None:
     )
 
 
+def format_inches(value: Optional[float]) -> str:
+    if value is None:
+        return "N/A"
+    return f'{value:.2f}"'
+
+
 @st.cache_data(ttl=900, show_spinner=False)
 def cached_forecast(city_config: dict, selected_year: int, selected_month: int) -> dict:
     return get_forecast_rainfall(city_config, selected_year, selected_month)
@@ -167,13 +174,13 @@ def cached_forecast(city_config: dict, selected_year: int, selected_month: int) 
 
 def threshold_selector() -> float:
     selected = st.radio(
-        "Kalshi-style threshold",
-        ["Above 1 inch", "Above 2 inches", "Above 3 inches", "Above custom threshold"],
+        "Rainfall threshold",
+        ["More than 1.00 in", "More than 2.00 in", "More than 3.00 in", "Custom inches"],
         horizontal=True,
     )
-    if selected == "Above custom threshold":
-        return float(st.number_input("Custom threshold in inches", min_value=0.01, value=4.0, step=0.25))
-    return float(selected.split()[1])
+    if selected == "Custom inches":
+        return float(st.number_input("Threshold in inches", min_value=0.01, value=4.0, step=0.25))
+    return float(selected.split()[2])
 
 
 def make_chart(frame: pd.DataFrame, selected_threshold: float, today_day: int):
@@ -250,7 +257,12 @@ def main() -> None:
     city_config = get_city_config(city)
     local_now = datetime.now(ZoneInfo(city_config["timezone"]))
     today = local_now.date()
-    today_day = today.day if today.month == selected_month and today.year == selected_year else 1
+    _, selected_month_end = calendar.monthrange(selected_year, selected_month)
+    selected_start = date(selected_year, selected_month, 1)
+    selected_end = date(selected_year, selected_month, selected_month_end)
+    is_current_month = selected_start <= today <= selected_end
+    is_past_month = selected_end < today
+    today_day = today.day if is_current_month else selected_month_end if is_past_month else 1
 
     st.markdown(
         f"""
@@ -264,54 +276,92 @@ def main() -> None:
     )
 
     historical = get_historical_monthly_average(city, city_config["station_id"], selected_month)
-    actuals_result = get_month_to_date_actuals(city, city_config["station_id"], selected_year, selected_month)
-    forecast = cached_forecast(city_config, selected_year, selected_month)
+    actuals_result = get_month_to_date_actuals(
+        city,
+        city_config["station_id"],
+        selected_year,
+        selected_month,
+        city_config["wfo"],
+    )
+    if is_past_month:
+        forecast = {
+            "daily": pd.DataFrame(columns=["date", "qpf_inches", "source"]),
+            "total_inches": 0.0,
+            "confidence": "N/A",
+            "source": "Past month selected; forecast is not used.",
+        }
+    else:
+        forecast = cached_forecast(city_config, selected_year, selected_month)
 
     actuals = actuals_result["daily"]
+    has_actuals = not actuals.empty
     historical_avg = historical["value"]
-    accumulated = accumulated_rainfall(actuals)
-    today_total = accumulated_today(actuals, today)
+    accumulated = accumulated_rainfall(actuals) if has_actuals else None
+    today_total = accumulated_today(actuals, today) if has_actuals and is_current_month else None
     forecast_remaining = forecast["total_inches"]
-    projected_total = accumulated + forecast_remaining
+    forecast_display_value = None if is_past_month else forecast_remaining
+    projected_total = None if accumulated is None else accumulated + forecast_remaining
     days_remaining = days_remaining_in_month(today, selected_month, selected_year)
 
     threshold = threshold_selector()
-    probability_result = estimate_probability_above_threshold(
-        threshold=threshold,
-        accumulated=accumulated,
-        forecast_remaining=forecast_remaining,
-        historical_month_avg=historical_avg,
-        days_remaining=days_remaining,
-        forecast_confidence=forecast["confidence"],
-    )
-    recommendation = recommendation_from_probability(
-        probability_result["probability"],
-        probability_result["confidence"],
-    )
-    buffer = projected_total - threshold
+    if projected_total is None:
+        probability_result = {
+            "probability": None,
+            "confidence": "N/A",
+            "explanation": "Observed rainfall data is not available for this city and month yet.",
+        }
+        recommendation = "N/A"
+        buffer = None
+    elif is_past_month:
+        did_exceed = projected_total > threshold
+        probability_result = {
+            "probability": 1.0 if did_exceed else 0.0,
+            "confidence": actuals_result["confidence"],
+            "explanation": "Past month selected, so the result is based only on available observed rainfall rows.",
+        }
+        recommendation = "Settled" if did_exceed else "Below"
+        buffer = projected_total - threshold
+    else:
+        probability_result = estimate_probability_above_threshold(
+            threshold=threshold,
+            accumulated=accumulated,
+            forecast_remaining=forecast_remaining,
+            historical_month_avg=historical_avg,
+            days_remaining=days_remaining,
+            forecast_confidence=forecast["confidence"],
+        )
+        recommendation = recommendation_from_probability(
+            probability_result["probability"],
+            probability_result["confidence"],
+        )
+        buffer = projected_total - threshold
+
+    probability_text = "N/A" if probability_result["probability"] is None else f'{probability_result["probability"]:.0%}'
+    buffer_text = "Buffer N/A" if buffer is None else f'Buffer {buffer:+.2f}"'
 
     kpi_cols = st.columns(6)
     with kpi_cols[0]:
-        kpi_card("Historical Month Rainfall", f'{historical_avg:.2f}"', historical["source"])
+        kpi_card("Historical Month Rainfall", format_inches(historical_avg), historical["source"])
     with kpi_cols[1]:
-        kpi_card("Accumulated Month Rainfall", f'{accumulated:.2f}"', actuals_result["source"])
+        kpi_card("Observed Month Rainfall", format_inches(accumulated), actuals_result["source"])
     with kpi_cols[2]:
-        kpi_card("Forecast Month Rainfall", f'{forecast_remaining:.2f}"', forecast["confidence"])
+        kpi_card("Forecast Remaining Rainfall", format_inches(forecast_display_value), forecast["confidence"])
     with kpi_cols[3]:
-        kpi_card("Projected Month Rainfall", f'{projected_total:.2f}"', f'Buffer {buffer:+.2f}"')
+        kpi_card("Projected Full-Month Rainfall", format_inches(projected_total), buffer_text)
     with kpi_cols[4]:
-        kpi_card("Accumulated Today", f'{today_total:.2f}"', "Trace and missing count as 0.00")
+        kpi_card("Observed Today", format_inches(today_total), "Only shown for current-month rows")
     with kpi_cols[5]:
-        kpi_card("Probability of Occurrence", f'{probability_result["probability"]:.0%}', probability_result["confidence"])
+        kpi_card("Probability Above Threshold", probability_text, probability_result["confidence"])
 
-    st.markdown("### Threshold View")
+    st.markdown("### Rainfall Threshold")
     trade_cols = st.columns([1.1, 1.1, 1.1, 2.7])
     with trade_cols[0]:
-        kpi_card("Selected Threshold", f'Above {threshold:g}"', "Strictly greater than")
+        kpi_card("Selected Threshold", f'{threshold:.2f}"', "Must be greater than this amount")
     with trade_cols[1]:
         kpi_card("Recommendation", recommendation, f'Data confidence: {probability_result["confidence"]}')
     with trade_cols[2]:
-        kpi_card("Recent Volatility", f'{recent_daily_volatility(actuals):.2f}"', "Last available local rows")
+        volatility = recent_daily_volatility(actuals) if has_actuals else None
+        kpi_card("Recent Volatility", format_inches(volatility), "Last available observed rows")
     with trade_cols[3]:
         st.markdown(
             f"""

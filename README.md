@@ -1,6 +1,6 @@
 # NWS Rainfall Monitor
 
-Dark Streamlit dashboard for monitoring Kalshi-style monthly rainfall markets with NWS station configuration, fallback historical data, fallback observed rainfall, NWS forecast adapters, threshold probabilities, and a simple rainfall timeline chart.
+Dark Streamlit dashboard for monitoring monthly rainfall markets with NWS station configuration, fallback historical data, fallback observed rainfall, NWS forecast adapters, threshold probabilities, and a simple rainfall timeline chart.
 
 ## 1. How to run the app
 

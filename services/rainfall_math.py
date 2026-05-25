@@ -9,7 +9,7 @@ import pandas as pd
 def parse_precipitation(value) -> float:
     """Convert NWS-style precipitation values to inches.
 
-    Kalshi-style settlement notes treat trace (T) and missing (M) as 0.00.
+    Settlement notes treat trace (T) and missing (M) as 0.00.
     """
     if value is None:
         return 0.0
@@ -79,19 +79,24 @@ def daily_cumulative_frame(
         by_day = forecast_daily.groupby("day")["qpf_inches"].sum()
         frame["forecast_daily"] = frame["day"].map(by_day).fillna(0.0)
 
-    frame["actual_cumulative"] = frame["actual_daily"].cumsum()
-
     last_actual_day = 0
     if not actuals.empty:
         last_actual_day = int(max(actuals["day"]))
 
+    frame["actual_cumulative"] = frame["actual_daily"].cumsum()
+    if actuals.empty:
+        frame["actual_cumulative"] = None
+    else:
+        frame.loc[frame["day"] > last_actual_day, "actual_cumulative"] = None
+
     base_total = frame.loc[frame["day"] <= last_actual_day, "actual_daily"].sum()
     frame["forecast_cumulative"] = None
-    running = base_total
-    for idx, row in frame.iterrows():
-        if row["day"] > last_actual_day:
-            running += row["forecast_daily"]
-            frame.at[idx, "forecast_cumulative"] = running
+    if not forecast_daily.empty:
+        running = base_total
+        for idx, row in frame.iterrows():
+            if row["day"] > last_actual_day:
+                running += row["forecast_daily"]
+                frame.at[idx, "forecast_cumulative"] = running
 
     return frame
 
