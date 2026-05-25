@@ -1,0 +1,241 @@
+city,station_id,month,historical_avg_inches
+Atlanta,CLIATL,1,4.20
+Atlanta,CLIATL,2,4.60
+Atlanta,CLIATL,3,4.80
+Atlanta,CLIATL,4,3.60
+Atlanta,CLIATL,5,3.70
+Atlanta,CLIATL,6,4.00
+Atlanta,CLIATL,7,5.10
+Atlanta,CLIATL,8,3.90
+Atlanta,CLIATL,9,4.50
+Atlanta,CLIATL,10,3.40
+Atlanta,CLIATL,11,4.10
+Atlanta,CLIATL,12,4.30
+Austin,CLIAUS,1,2.20
+Austin,CLIAUS,2,2.10
+Austin,CLIAUS,3,2.80
+Austin,CLIAUS,4,2.60
+Austin,CLIAUS,5,5.00
+Austin,CLIAUS,6,4.30
+Austin,CLIAUS,7,2.00
+Austin,CLIAUS,8,2.30
+Austin,CLIAUS,9,3.40
+Austin,CLIAUS,10,4.10
+Austin,CLIAUS,11,2.90
+Austin,CLIAUS,12,2.40
+Boston,CLIBOS,1,3.30
+Boston,CLIBOS,2,3.20
+Boston,CLIBOS,3,4.30
+Boston,CLIBOS,4,3.70
+Boston,CLIBOS,5,3.40
+Boston,CLIBOS,6,3.70
+Boston,CLIBOS,7,3.30
+Boston,CLIBOS,8,3.40
+Boston,CLIBOS,9,3.50
+Boston,CLIBOS,10,4.00
+Boston,CLIBOS,11,4.00
+Boston,CLIBOS,12,3.80
+Chicago,CLIORD,1,1.80
+Chicago,CLIORD,2,1.80
+Chicago,CLIORD,3,2.50
+Chicago,CLIORD,4,3.70
+Chicago,CLIORD,5,4.00
+Chicago,CLIORD,6,4.10
+Chicago,CLIORD,7,3.70
+Chicago,CLIORD,8,4.30
+Chicago,CLIORD,9,3.30
+Chicago,CLIORD,10,3.20
+Chicago,CLIORD,11,2.80
+Chicago,CLIORD,12,2.10
+Dallas,CLIDFW,1,2.00
+Dallas,CLIDFW,2,2.40
+Dallas,CLIDFW,3,3.50
+Dallas,CLIDFW,4,3.10
+Dallas,CLIDFW,5,4.90
+Dallas,CLIDFW,6,4.10
+Dallas,CLIDFW,7,2.20
+Dallas,CLIDFW,8,2.10
+Dallas,CLIDFW,9,2.70
+Dallas,CLIDFW,10,4.80
+Dallas,CLIDFW,11,2.90
+Dallas,CLIDFW,12,2.70
+Denver,CLIDEN,1,0.40
+Denver,CLIDEN,2,0.40
+Denver,CLIDEN,3,1.00
+Denver,CLIDEN,4,1.70
+Denver,CLIDEN,5,2.20
+Denver,CLIDEN,6,1.90
+Denver,CLIDEN,7,2.10
+Denver,CLIDEN,8,1.70
+Denver,CLIDEN,9,1.00
+Denver,CLIDEN,10,1.00
+Denver,CLIDEN,11,0.60
+Denver,CLIDEN,12,0.40
+Houston,CLIIAH,1,3.70
+Houston,CLIIAH,2,3.20
+Houston,CLIIAH,3,3.30
+Houston,CLIIAH,4,3.40
+Houston,CLIIAH,5,5.10
+Houston,CLIIAH,6,6.00
+Houston,CLIIAH,7,3.80
+Houston,CLIIAH,8,3.80
+Houston,CLIIAH,9,4.30
+Houston,CLIIAH,10,5.70
+Houston,CLIIAH,11,4.30
+Houston,CLIIAH,12,3.70
+Las Vegas,CLILAS,1,0.50
+Las Vegas,CLILAS,2,0.70
+Las Vegas,CLILAS,3,0.40
+Las Vegas,CLILAS,4,0.20
+Las Vegas,CLILAS,5,0.10
+Las Vegas,CLILAS,6,0.10
+Las Vegas,CLILAS,7,0.40
+Las Vegas,CLILAS,8,0.50
+Las Vegas,CLILAS,9,0.30
+Las Vegas,CLILAS,10,0.30
+Las Vegas,CLILAS,11,0.30
+Las Vegas,CLILAS,12,0.50
+Los Angeles,CLILAX,1,3.10
+Los Angeles,CLILAX,2,3.40
+Los Angeles,CLILAX,3,2.40
+Los Angeles,CLILAX,4,0.90
+Los Angeles,CLILAX,5,0.30
+Los Angeles,CLILAX,6,0.10
+Los Angeles,CLILAX,7,0.00
+Los Angeles,CLILAX,8,0.00
+Los Angeles,CLILAX,9,0.10
+Los Angeles,CLILAX,10,0.60
+Los Angeles,CLILAX,11,0.80
+Los Angeles,CLILAX,12,2.30
+Miami,CLIMIA,1,1.90
+Miami,CLIMIA,2,2.10
+Miami,CLIMIA,3,2.50
+Miami,CLIMIA,4,3.40
+Miami,CLIMIA,5,5.90
+Miami,CLIMIA,6,9.50
+Miami,CLIMIA,7,6.30
+Miami,CLIMIA,8,7.90
+Miami,CLIMIA,9,8.40
+Miami,CLIMIA,10,6.30
+Miami,CLIMIA,11,3.30
+Miami,CLIMIA,12,2.00
+Minneapolis,CLIMSP,1,0.90
+Minneapolis,CLIMSP,2,0.80
+Minneapolis,CLIMSP,3,1.90
+Minneapolis,CLIMSP,4,2.60
+Minneapolis,CLIMSP,5,3.40
+Minneapolis,CLIMSP,6,4.30
+Minneapolis,CLIMSP,7,4.00
+Minneapolis,CLIMSP,8,4.30
+Minneapolis,CLIMSP,9,3.10
+Minneapolis,CLIMSP,10,2.40
+Minneapolis,CLIMSP,11,1.60
+Minneapolis,CLIMSP,12,1.10
+New Orleans,CLIMSY,1,5.90
+New Orleans,CLIMSY,2,5.00
+New Orleans,CLIMSY,3,5.20
+New Orleans,CLIMSY,4,4.60
+New Orleans,CLIMSY,5,5.00
+New Orleans,CLIMSY,6,6.80
+New Orleans,CLIMSY,7,6.20
+New Orleans,CLIMSY,8,6.00
+New Orleans,CLIMSY,9,5.50
+New Orleans,CLIMSY,10,3.60
+New Orleans,CLIMSY,11,4.50
+New Orleans,CLIMSY,12,5.50
+New York City,CLINYC,1,3.70
+New York City,CLINYC,2,3.20
+New York City,CLINYC,3,4.30
+New York City,CLINYC,4,4.10
+New York City,CLINYC,5,4.00
+New York City,CLINYC,6,4.50
+New York City,CLINYC,7,4.60
+New York City,CLINYC,8,4.40
+New York City,CLINYC,9,4.30
+New York City,CLINYC,10,4.40
+New York City,CLINYC,11,3.60
+New York City,CLINYC,12,4.00
+Oklahoma City,CLIOKC,1,1.40
+Oklahoma City,CLIOKC,2,1.70
+Oklahoma City,CLIOKC,3,2.90
+Oklahoma City,CLIOKC,4,3.20
+Oklahoma City,CLIOKC,5,5.00
+Oklahoma City,CLIOKC,6,4.60
+Oklahoma City,CLIOKC,7,2.70
+Oklahoma City,CLIOKC,8,2.90
+Oklahoma City,CLIOKC,9,3.80
+Oklahoma City,CLIOKC,10,3.70
+Oklahoma City,CLIOKC,11,2.10
+Oklahoma City,CLIOKC,12,1.70
+Philadelphia,CLIPHL,1,3.00
+Philadelphia,CLIPHL,2,2.70
+Philadelphia,CLIPHL,3,3.80
+Philadelphia,CLIPHL,4,3.60
+Philadelphia,CLIPHL,5,3.90
+Philadelphia,CLIPHL,6,3.80
+Philadelphia,CLIPHL,7,4.50
+Philadelphia,CLIPHL,8,3.80
+Philadelphia,CLIPHL,9,4.10
+Philadelphia,CLIPHL,10,3.40
+Philadelphia,CLIPHL,11,3.20
+Philadelphia,CLIPHL,12,3.50
+Phoenix,CLIPHX,1,0.90
+Phoenix,CLIPHX,2,0.90
+Phoenix,CLIPHX,3,0.70
+Phoenix,CLIPHX,4,0.30
+Phoenix,CLIPHX,5,0.10
+Phoenix,CLIPHX,6,0.00
+Phoenix,CLIPHX,7,1.00
+Phoenix,CLIPHX,8,1.00
+Phoenix,CLIPHX,9,0.70
+Phoenix,CLIPHX,10,0.60
+Phoenix,CLIPHX,11,0.60
+Phoenix,CLIPHX,12,0.90
+San Antonio,CLISAT,1,1.80
+San Antonio,CLISAT,2,1.80
+San Antonio,CLISAT,3,2.30
+San Antonio,CLISAT,4,2.60
+San Antonio,CLISAT,5,4.40
+San Antonio,CLISAT,6,4.00
+San Antonio,CLISAT,7,2.10
+San Antonio,CLISAT,8,2.20
+San Antonio,CLISAT,9,3.00
+San Antonio,CLISAT,10,4.10
+San Antonio,CLISAT,11,2.30
+San Antonio,CLISAT,12,2.00
+San Francisco,CLISFO,1,4.50
+San Francisco,CLISFO,2,4.40
+San Francisco,CLISFO,3,3.30
+San Francisco,CLISFO,4,1.50
+San Francisco,CLISFO,5,0.70
+San Francisco,CLISFO,6,0.20
+San Francisco,CLISFO,7,0.00
+San Francisco,CLISFO,8,0.00
+San Francisco,CLISFO,9,0.10
+San Francisco,CLISFO,10,1.10
+San Francisco,CLISFO,11,2.90
+San Francisco,CLISFO,12,4.50
+Seattle/Tacoma,CLISEA,1,5.80
+Seattle/Tacoma,CLISEA,2,4.10
+Seattle/Tacoma,CLISEA,3,3.80
+Seattle/Tacoma,CLISEA,4,2.70
+Seattle/Tacoma,CLISEA,5,2.00
+Seattle/Tacoma,CLISEA,6,1.50
+Seattle/Tacoma,CLISEA,7,0.70
+Seattle/Tacoma,CLISEA,8,0.90
+Seattle/Tacoma,CLISEA,9,1.60
+Seattle/Tacoma,CLISEA,10,3.90
+Seattle/Tacoma,CLISEA,11,6.30
+Seattle/Tacoma,CLISEA,12,5.70
+Washington DC,CLIDCA,1,2.80
+Washington DC,CLIDCA,2,2.60
+Washington DC,CLIDCA,3,3.50
+Washington DC,CLIDCA,4,3.10
+Washington DC,CLIDCA,5,3.90
+Washington DC,CLIDCA,6,3.80
+Washington DC,CLIDCA,7,3.70
+Washington DC,CLIDCA,8,3.30
+Washington DC,CLIDCA,9,3.70
+Washington DC,CLIDCA,10,3.40
+Washington DC,CLIDCA,11,2.80
+Washington DC,CLIDCA,12,3.10

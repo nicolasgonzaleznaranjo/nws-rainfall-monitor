@@ -5,8 +5,12 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
+
+try:
+    import plotly.graph_objects as go
+except ModuleNotFoundError:
+    go = None
 
 from config.cities import get_city_config, get_city_names
 from services.climate_reports import get_historical_monthly_average, get_month_to_date_actuals
@@ -172,7 +176,10 @@ def threshold_selector() -> float:
     return float(selected.split()[1])
 
 
-def make_chart(frame: pd.DataFrame, selected_threshold: float, today_day: int) -> go.Figure:
+def make_chart(frame: pd.DataFrame, selected_threshold: float, today_day: int):
+    if go is None:
+        return None
+
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -317,7 +324,16 @@ def main() -> None:
         )
 
     chart_frame = daily_cumulative_frame(actuals, forecast["daily"], selected_year, selected_month)
-    st.plotly_chart(make_chart(chart_frame, threshold, today_day), use_container_width=True)
+    chart = make_chart(chart_frame, threshold, today_day)
+    if chart is not None:
+        st.plotly_chart(chart, use_container_width=True)
+    else:
+        st.warning(
+            "Plotly is not installed, so this deployment is showing a simple fallback chart. "
+            "Add plotly to requirements.txt and redeploy to see the full threshold chart."
+        )
+        fallback_chart = chart_frame.set_index("day")[["actual_cumulative", "forecast_cumulative"]]
+        st.line_chart(fallback_chart)
 
     with st.expander("Market Rules"):
         st.markdown(

@@ -1,0 +1,51 @@
+date,city,station_id,precipitation_inches,source
+2026-05-01,Seattle/Tacoma,CLISEA,0.12,Sample fallback
+2026-05-02,Seattle/Tacoma,CLISEA,T,Sample fallback
+2026-05-03,Seattle/Tacoma,CLISEA,0.04,Sample fallback
+2026-05-04,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-05,Seattle/Tacoma,CLISEA,0.18,Sample fallback
+2026-05-06,Seattle/Tacoma,CLISEA,0.09,Sample fallback
+2026-05-07,Seattle/Tacoma,CLISEA,M,Sample fallback
+2026-05-08,Seattle/Tacoma,CLISEA,0.31,Sample fallback
+2026-05-09,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-10,Seattle/Tacoma,CLISEA,0.02,Sample fallback
+2026-05-11,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-12,Seattle/Tacoma,CLISEA,0.16,Sample fallback
+2026-05-13,Seattle/Tacoma,CLISEA,0.07,Sample fallback
+2026-05-14,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-15,Seattle/Tacoma,CLISEA,0.05,Sample fallback
+2026-05-16,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-17,Seattle/Tacoma,CLISEA,0.11,Sample fallback
+2026-05-18,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-19,Seattle/Tacoma,CLISEA,0.22,Sample fallback
+2026-05-20,Seattle/Tacoma,CLISEA,0.03,Sample fallback
+2026-05-21,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-22,Seattle/Tacoma,CLISEA,0.06,Sample fallback
+2026-05-23,Seattle/Tacoma,CLISEA,0.00,Sample fallback
+2026-05-24,Seattle/Tacoma,CLISEA,0.14,Sample fallback
+2026-05-25,Seattle/Tacoma,CLISEA,0.01,Sample fallback
+2026-05-01,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-02,Las Vegas,CLILAS,T,Sample fallback
+2026-05-03,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-04,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-05,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-06,Las Vegas,CLILAS,0.03,Sample fallback
+2026-05-07,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-08,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-09,Las Vegas,CLILAS,M,Sample fallback
+2026-05-10,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-11,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-12,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-13,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-14,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-15,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-16,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-17,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-18,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-19,Las Vegas,CLILAS,0.02,Sample fallback
+2026-05-20,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-21,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-22,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-23,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-24,Las Vegas,CLILAS,0.00,Sample fallback
+2026-05-25,Las Vegas,CLILAS,0.00,Sample fallback
