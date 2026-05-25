@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import calendar
+import html
 from datetime import date, datetime
 from typing import Optional
 from zoneinfo import ZoneInfo
@@ -16,20 +17,13 @@ except ModuleNotFoundError:
 from config.cities import get_city_config, get_city_names
 from services.climate_reports import get_historical_monthly_average, get_month_to_date_actuals
 from services.nws_api import get_forecast_rainfall
-from services.probability_model import (
-    estimate_probability_above_threshold,
-    recommendation_from_probability,
-)
 from services.rainfall_math import (
     accumulated_rainfall,
     accumulated_today,
     daily_cumulative_frame,
-    days_remaining_in_month,
-    recent_daily_volatility,
 )
 
 st.set_page_config(page_title="NWS Rainfall Monitor", layout="wide")
-
 
 MONTHS = list(calendar.month_name)[1:]
 
@@ -42,16 +36,17 @@ def inject_css() -> None:
             background: #080B10;
             color: #F4F7FB;
         }
-        [data-testid="stHeader"] { background: rgba(8, 11, 16, 0.84); }
+        [data-testid="stHeader"] {
+            background: rgba(8, 11, 16, 0.86);
+        }
         .block-container {
             max-width: 1280px;
-            padding-top: 2.2rem;
-            padding-bottom: 3rem;
+            padding: 2.2rem 1.35rem 3rem;
         }
         h1 {
             color: #FFFFFF;
-            font-size: clamp(2.4rem, 6vw, 4.8rem) !important;
-            line-height: 0.95 !important;
+            font-size: clamp(2.35rem, 6vw, 4.8rem) !important;
+            line-height: 0.96 !important;
             font-weight: 900 !important;
             letter-spacing: 0 !important;
             margin-bottom: 0.25rem !important;
@@ -69,6 +64,17 @@ def inject_css() -> None:
             padding: 0.85rem 1rem;
             margin: 0.7rem 0 1rem;
         }
+        .kpi-grid, .detail-grid {
+            display: grid;
+            gap: 1rem;
+            margin: 1rem 0 1.25rem;
+        }
+        .kpi-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+        .detail-grid {
+            grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+        }
         .kpi-card {
             background: linear-gradient(180deg, #121925 0%, #0D131D 100%);
             border: 1px solid #223047;
@@ -76,6 +82,23 @@ def inject_css() -> None:
             padding: 1rem 1.05rem;
             min-height: 118px;
             box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+        }
+        .kpi-card.accent-red {
+            border-color: rgba(255, 75, 75, 0.7);
+            box-shadow: 0 18px 45px rgba(255, 75, 75, 0.08);
+        }
+        .kpi-card.accent-blue {
+            border-color: rgba(98, 199, 255, 0.7);
+            box-shadow: 0 18px 45px rgba(98, 199, 255, 0.08);
+        }
+        .kpi-card.accent-gray {
+            border-color: rgba(154, 166, 184, 0.55);
+        }
+        .kpi-card.accent-red .kpi-value {
+            color: #FF5B5B;
+        }
+        .kpi-card.accent-blue .kpi-value {
+            color: #62C7FF;
         }
         .kpi-label {
             color: #8F9BAD;
@@ -96,6 +119,41 @@ def inject_css() -> None:
             font-size: 0.86rem;
             margin-top: 0.5rem;
         }
+        .section-title {
+            color: #F8FAFC;
+            font-size: 1.55rem;
+            font-weight: 850;
+            margin: 1.15rem 0 0.35rem;
+        }
+        .source-note {
+            color: #A8B1C1;
+            font-size: 0.92rem;
+            margin: -0.2rem 0 1rem;
+        }
+        .legend-note {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            color: #B8C2D2;
+            font-size: 0.9rem;
+            margin: 0.25rem 0 0.85rem;
+        }
+        .legend-pill {
+            background: #101722;
+            border: 1px solid #263246;
+            border-radius: 999px;
+            padding: 0.28rem 0.62rem;
+        }
+        .dot-red, .dot-blue, .dot-gray {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            margin-right: 0.35rem;
+        }
+        .dot-red { background: #FF4B4B; }
+        .dot-blue { background: #62C7FF; }
+        .dot-gray { background: #9AA6B8; }
         div[role="radiogroup"] {
             gap: 0.45rem;
         }
@@ -108,39 +166,50 @@ def inject_css() -> None:
             min-height: 38px;
         }
         div[role="radiogroup"] label:has(input:checked) {
-            background: #D92525;
+            background: #141820;
             border-color: #F04444;
-            color: white;
+            color: #FF4B4B;
         }
         div[role="radiogroup"] label p {
             font-size: 0.9rem;
             font-weight: 750;
         }
         .stButton > button {
-            background: #D92525;
-            color: white;
+            background: #141820;
+            color: #FF4B4B;
             border: 1px solid #F04444;
             border-radius: 999px;
             font-weight: 800;
         }
         .stButton > button:hover {
-            background: #F04444;
-            color: white;
+            background: #1C202A;
+            color: #FF6B6B;
             border-color: #FF6969;
         }
-        section[data-testid="stSidebar"] {
-            background: #0B1018;
+        div[data-testid="stSlider"] {
+            padding: 0.15rem 0 0.75rem;
         }
-        .callout {
-            background: #101722;
-            border: 1px solid #253147;
-            border-radius: 8px;
-            padding: 1rem;
-            color: #D9E1ED;
-        }
-        .warning {
-            color: #F6C56B;
-            font-weight: 750;
+        @media (max-width: 720px) {
+            .block-container {
+                padding: 1.25rem 0.75rem 2rem;
+            }
+            .subtitle {
+                font-size: 0.95rem;
+            }
+            .station-line {
+                font-size: 0.9rem;
+                line-height: 1.45;
+            }
+            .kpi-grid, .detail-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            .kpi-card {
+                min-height: 104px;
+            }
+            .kpi-value {
+                font-size: 1.75rem;
+            }
         }
         </style>
         """,
@@ -148,23 +217,40 @@ def inject_css() -> None:
     )
 
 
-def kpi_card(label: str, value: str, sub: str = "") -> None:
-    st.markdown(
-        f"""
-        <div class="kpi-card">
-            <div class="kpi-label">{label}</div>
-            <div class="kpi-value">{value}</div>
-            <div class="kpi-sub">{sub}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+def kpi_card_html(label: str, value: str, sub: str = "", accent: str = "") -> str:
+    accent_class = f" accent-{accent}" if accent else ""
+    return f"""
+    <div class="kpi-card{accent_class}">
+        <div class="kpi-label">{html.escape(label)}</div>
+        <div class="kpi-value">{html.escape(value)}</div>
+        <div class="kpi-sub">{html.escape(sub)}</div>
+    </div>
+    """
+
+
+def render_card_grid(cards: list[dict], class_name: str = "kpi-grid") -> None:
+    card_html = "".join(
+        kpi_card_html(
+            card["label"],
+            card["value"],
+            card.get("sub", ""),
+            card.get("accent", ""),
+        )
+        for card in cards
     )
+    st.markdown(f'<div class="{class_name}">{card_html}</div>', unsafe_allow_html=True)
 
 
 def format_inches(value: Optional[float]) -> str:
-    if value is None:
+    if value is None or pd.isna(value):
         return "N/A"
     return f'{value:.2f}"'
+
+
+def format_table_inches(value: Optional[float]) -> str:
+    if value is None or pd.isna(value):
+        return "-"
+    return f"{float(value):.2f}"
 
 
 @st.cache_data(ttl=900, show_spinner=False)
@@ -172,30 +258,43 @@ def cached_forecast(city_config: dict, selected_year: int, selected_month: int) 
     return get_forecast_rainfall(city_config, selected_year, selected_month)
 
 
-def threshold_selector() -> float:
-    selected = st.radio(
-        "Rainfall threshold",
-        ["More than 1.00 in", "More than 2.00 in", "More than 3.00 in", "Custom inches"],
-        horizontal=True,
-    )
-    if selected == "Custom inches":
-        return float(st.number_input("Threshold in inches", min_value=0.01, value=4.0, step=0.25))
-    return float(selected.split()[2])
-
-
-def make_chart(frame: pd.DataFrame, selected_threshold: float, today_day: int):
+def make_chart(
+    frame: pd.DataFrame,
+    today_day: int,
+    month_end_day: int,
+    historical_avg: Optional[float],
+):
     if go is None:
         return None
 
     fig = go.Figure()
     fig.add_trace(
+        go.Bar(
+            x=frame["day"],
+            y=frame["actual_daily"],
+            name="Daily observed rain",
+            marker_color="rgba(255, 75, 75, 0.42)",
+            hovertemplate="Day %{x}<br>Observed daily: %{y:.2f} in<extra></extra>",
+        )
+    )
+    fig.add_trace(
+        go.Bar(
+            x=frame["day"],
+            y=frame["forecast_daily"],
+            name="Daily forecast rain",
+            marker_color="rgba(98, 199, 255, 0.34)",
+            hovertemplate="Day %{x}<br>Forecast daily: %{y:.2f} in<extra></extra>",
+        )
+    )
+    fig.add_trace(
         go.Scatter(
             x=frame["day"],
             y=frame["actual_cumulative"],
             mode="lines+markers",
-            name="Actual accumulated",
-            line=dict(color="#F04444", width=4),
-            marker=dict(size=5),
+            name="Observed cumulative",
+            line=dict(color="#FF4B4B", width=4, shape="hv"),
+            marker=dict(size=6, color="#FF4B4B"),
+            hovertemplate="Day %{x}<br>Observed cumulative: %{y:.2f} in<extra></extra>",
         )
     )
     fig.add_trace(
@@ -203,17 +302,18 @@ def make_chart(frame: pd.DataFrame, selected_threshold: float, today_day: int):
             x=frame["day"],
             y=frame["forecast_cumulative"],
             mode="lines+markers",
-            name="Forecast projection",
-            line=dict(color="#7DD3FC", width=3, dash="dash"),
-            marker=dict(size=5),
+            name="Forecast cumulative",
+            line=dict(color="#62C7FF", width=3, dash="dash", shape="hv"),
+            marker=dict(size=6, color="#62C7FF"),
+            hovertemplate="Day %{x}<br>Projected cumulative: %{y:.2f} in<extra></extra>",
         )
     )
-    for threshold in sorted({1.0, 2.0, 3.0, float(selected_threshold)}):
+    if historical_avg:
         fig.add_hline(
-            y=threshold,
+            y=historical_avg,
             line_dash="dot",
-            line_color="#AAB4C3" if threshold != selected_threshold else "#F6C56B",
-            annotation_text=f"{threshold:g} in",
+            line_color="#9AA6B8",
+            annotation_text=f"Historical normal {historical_avg:.2f} in",
             annotation_position="top left",
         )
     fig.add_vline(
@@ -225,16 +325,54 @@ def make_chart(frame: pd.DataFrame, selected_threshold: float, today_day: int):
         annotation_position="top",
     )
     fig.update_layout(
-        height=430,
+        barmode="overlay",
+        height=520,
         paper_bgcolor="#080B10",
         plot_bgcolor="#0D131D",
         font=dict(color="#DDE5F0"),
-        margin=dict(l=30, r=25, t=28, b=35),
+        margin=dict(l=36, r=18, t=36, b=42),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-        xaxis=dict(title="Day of month", gridcolor="#1F2937", zeroline=False),
+        hovermode="x unified",
+        xaxis=dict(
+            title="Day of month",
+            gridcolor="#1F2937",
+            zeroline=False,
+            tickmode="array",
+            tickvals=list(range(1, month_end_day + 1)),
+            range=[0.5, month_end_day + 0.5],
+        ),
         yaxis=dict(title="Rainfall inches", gridcolor="#1F2937", zeroline=False),
     )
     return fig
+
+
+def prepare_daily_table(frame: pd.DataFrame) -> pd.DataFrame:
+    table = frame.copy()
+    table = table.rename(
+        columns={
+            "day": "Day",
+            "actual_daily": "Observed Daily",
+            "forecast_daily": "Forecast Daily",
+            "actual_cumulative": "Observed Cumulative",
+            "forecast_cumulative": "Forecast Cumulative",
+        }
+    )
+    for column in [
+        "Observed Daily",
+        "Forecast Daily",
+        "Observed Cumulative",
+        "Forecast Cumulative",
+    ]:
+        table[column] = table[column].apply(format_table_inches)
+    return table[
+        [
+            "Day",
+            "Observed Daily",
+            "Observed Cumulative",
+            "Forecast Daily",
+            "Forecast Cumulative",
+        ]
+    ]
 
 
 def main() -> None:
@@ -267,9 +405,12 @@ def main() -> None:
     st.markdown(
         f"""
         <div class="station-line">
-            <strong>{city_config["location"]}</strong> &middot; Climate product {city_config["station_id"]} &middot;
-            Station {city_config["observation_station"]} &middot; WFO {city_config["wfo"]} &middot;
-            Local time {local_now.strftime("%b %-d, %Y %-I:%M %p")} &middot; Kalshi mapping {city_config["kalshi_market"]}
+            <strong>{html.escape(city_config["location"])}</strong> &middot;
+            Climate product {html.escape(city_config["station_id"])} &middot;
+            Station {html.escape(city_config["observation_station"])} &middot;
+            WFO {html.escape(city_config["wfo"])} &middot;
+            Local time {local_now.strftime("%b %-d, %Y %-I:%M %p")} &middot;
+            Kalshi mapping {html.escape(city_config["kalshi_market"])}
         </div>
         """,
         unsafe_allow_html=True,
@@ -295,95 +436,116 @@ def main() -> None:
 
     actuals = actuals_result["daily"]
     has_actuals = not actuals.empty
+    has_forecast = not forecast["daily"].empty
     historical_avg = historical["value"]
-    accumulated = accumulated_rainfall(actuals) if has_actuals else None
-    today_total = accumulated_today(actuals, today) if has_actuals and is_current_month else None
-    forecast_remaining = forecast["total_inches"]
-    forecast_display_value = None if is_past_month else forecast_remaining
-    projected_total = None if accumulated is None else accumulated + forecast_remaining
-    days_remaining = days_remaining_in_month(today, selected_month, selected_year)
-
-    threshold = threshold_selector()
-    if projected_total is None:
-        probability_result = {
-            "probability": None,
-            "confidence": "N/A",
-            "explanation": "Observed rainfall data is not available for this city and month yet.",
-        }
-        recommendation = "N/A"
-        buffer = None
-    elif is_past_month:
-        did_exceed = projected_total > threshold
-        probability_result = {
-            "probability": 1.0 if did_exceed else 0.0,
-            "confidence": actuals_result["confidence"],
-            "explanation": "Past month selected, so the result is based only on available observed rainfall rows.",
-        }
-        recommendation = "Settled" if did_exceed else "Below"
-        buffer = projected_total - threshold
-    else:
-        probability_result = estimate_probability_above_threshold(
-            threshold=threshold,
-            accumulated=accumulated,
-            forecast_remaining=forecast_remaining,
-            historical_month_avg=historical_avg,
-            days_remaining=days_remaining,
-            forecast_confidence=forecast["confidence"],
-        )
-        recommendation = recommendation_from_probability(
-            probability_result["probability"],
-            probability_result["confidence"],
-        )
-        buffer = projected_total - threshold
-
-    probability_text = "N/A" if probability_result["probability"] is None else f'{probability_result["probability"]:.0%}'
-    buffer_text = "Buffer N/A" if buffer is None else f'Buffer {buffer:+.2f}"'
-
-    kpi_cols = st.columns(6)
-    with kpi_cols[0]:
-        kpi_card("Historical Month Rainfall", format_inches(historical_avg), historical["source"])
-    with kpi_cols[1]:
-        kpi_card("Observed Month Rainfall", format_inches(accumulated), actuals_result["source"])
-    with kpi_cols[2]:
-        kpi_card("Forecast Remaining Rainfall", format_inches(forecast_display_value), forecast["confidence"])
-    with kpi_cols[3]:
-        kpi_card("Projected Full-Month Rainfall", format_inches(projected_total), buffer_text)
-    with kpi_cols[4]:
-        kpi_card("Observed Today", format_inches(today_total), "Only shown for current-month rows")
-    with kpi_cols[5]:
-        kpi_card("Probability Above Threshold", probability_text, probability_result["confidence"])
-
-    st.markdown("### Rainfall Threshold")
-    trade_cols = st.columns([1.1, 1.1, 1.1, 2.7])
-    with trade_cols[0]:
-        kpi_card("Selected Threshold", f'{threshold:.2f}"', "Must be greater than this amount")
-    with trade_cols[1]:
-        kpi_card("Recommendation", recommendation, f'Data confidence: {probability_result["confidence"]}')
-    with trade_cols[2]:
-        volatility = recent_daily_volatility(actuals) if has_actuals else None
-        kpi_card("Recent Volatility", format_inches(volatility), "Last available observed rows")
-    with trade_cols[3]:
-        st.markdown(
-            f"""
-            <div class="callout">
-                <strong>Model note:</strong> {probability_result["explanation"]}<br>
-                <span class="warning">Forecast source:</span> {forecast["source"]}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+    observed_total = accumulated_rainfall(actuals) if has_actuals else None
+    observed_today = accumulated_today(actuals, today) if has_actuals and is_current_month else None
+    forecast_remaining = None if is_past_month else forecast["total_inches"]
+    projected_total = None if observed_total is None else observed_total + (forecast_remaining or 0.0)
     chart_frame = daily_cumulative_frame(actuals, forecast["daily"], selected_year, selected_month)
-    chart = make_chart(chart_frame, threshold, today_day)
+
+    render_card_grid(
+        [
+            {
+                "label": "Historical Month Rainfall",
+                "value": format_inches(historical_avg),
+                "sub": historical["source"],
+                "accent": "gray",
+            },
+            {
+                "label": "Observed Month Rainfall",
+                "value": format_inches(observed_total),
+                "sub": actuals_result["source"],
+                "accent": "red",
+            },
+            {
+                "label": "Forecast Remaining Rainfall",
+                "value": format_inches(forecast_remaining),
+                "sub": forecast["confidence"],
+                "accent": "blue",
+            },
+            {
+                "label": "Projected Full-Month Rainfall",
+                "value": format_inches(projected_total),
+                "sub": "Observed plus forecast remaining",
+                "accent": "blue",
+            },
+            {
+                "label": "Observed Today",
+                "value": format_inches(observed_today),
+                "sub": "Only shown for current-month rows",
+                "accent": "red",
+            },
+        ]
+    )
+
+    st.markdown('<div class="section-title">Daily Rainfall Timeline</div>', unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="source-note">
+            Observed source: {html.escape(actuals_result["source"])} &middot;
+            Forecast source: {html.escape(forecast["source"])}
+        </div>
+        <div class="legend-note">
+            <span class="legend-pill"><span class="dot-red"></span>Red = observed rainfall</span>
+            <span class="legend-pill"><span class="dot-blue"></span>Blue = forecast rainfall</span>
+            <span class="legend-pill"><span class="dot-gray"></span>Gray dotted = historical normal</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    selected_day = st.slider(
+        "Day-by-day navigator",
+        min_value=1,
+        max_value=selected_month_end,
+        value=min(today_day, selected_month_end),
+        step=1,
+    )
+    day_row = chart_frame.loc[chart_frame["day"] == selected_day].iloc[0]
+    render_card_grid(
+        [
+            {
+                "label": f"Day {selected_day} Observed",
+                "value": format_inches(float(day_row["actual_daily"]) if has_actuals else None),
+                "sub": "Rain recorded on that day",
+                "accent": "red",
+            },
+            {
+                "label": f"Day {selected_day} Observed Total",
+                "value": format_inches(day_row["actual_cumulative"]),
+                "sub": "Accumulated through that day",
+                "accent": "red",
+            },
+            {
+                "label": f"Day {selected_day} Forecast",
+                "value": format_inches(float(day_row["forecast_daily"]) if has_forecast else None),
+                "sub": "Expected rain on that day",
+                "accent": "blue",
+            },
+            {
+                "label": f"Day {selected_day} Projected Total",
+                "value": format_inches(day_row["forecast_cumulative"]),
+                "sub": "Projected accumulation if available",
+                "accent": "blue",
+            },
+        ],
+        class_name="detail-grid",
+    )
+
+    chart = make_chart(chart_frame, today_day, selected_month_end, historical_avg)
     if chart is not None:
-        st.plotly_chart(chart, use_container_width=True)
+        st.plotly_chart(chart, use_container_width=True, config={"displayModeBar": False})
     else:
         st.warning(
             "Plotly is not installed, so this deployment is showing a simple fallback chart. "
-            "Add plotly to requirements.txt and redeploy to see the full threshold chart."
+            "Add plotly to requirements.txt and redeploy to see the full chart."
         )
         fallback_chart = chart_frame.set_index("day")[["actual_cumulative", "forecast_cumulative"]]
         st.line_chart(fallback_chart)
+
+    with st.expander("Daily Rainfall Table"):
+        st.dataframe(prepare_daily_table(chart_frame), use_container_width=True, hide_index=True)
 
     with st.expander("Market Rules"):
         st.markdown(
@@ -394,7 +556,6 @@ def main() -> None:
             - Trace `T` counts as `0.00`.
             - Missing `M` counts as `0.00`.
             - Later revisions do not count for this monitor's settlement view.
-            - Above means strictly greater than the selected threshold.
 
             **Warning:** This monitor is decision-support only. Final settlement depends on the official Kalshi market rules and NWS report.
             """

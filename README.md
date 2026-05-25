@@ -1,6 +1,6 @@
 # NWS Rainfall Monitor
 
-Dark Streamlit dashboard for monitoring monthly rainfall markets with NWS station configuration, fallback historical data, fallback observed rainfall, NWS forecast adapters, threshold probabilities, and a simple rainfall timeline chart.
+Dark Streamlit dashboard for monitoring monthly rainfall markets with NWS station configuration, fallback historical data, fallback observed rainfall, NWS forecast adapters, and a day-by-day rainfall timeline chart.
 
 ## 1. How to run the app
 
@@ -72,24 +72,17 @@ To connect live settlement-style data, update `get_month_to_date_actuals()` so i
 - The first full-month Daily Climate Report controls.
 - Later revisions should not overwrite the settlement view unless you intentionally store them separately.
 
-## 5. How the probability model works
+## 5. How the rainfall chart works
 
-The MVP model lives in `services/probability_model.py`.
+The main chart shows the full month, day by day:
 
-It calculates:
+- Red bars show observed daily rainfall.
+- The red line shows observed accumulated rainfall.
+- Blue bars show forecast daily rainfall.
+- The blue dashed line shows projected accumulated rainfall.
+- The gray dotted line shows the historical monthly normal.
 
-```text
-projected_total = accumulated_rainfall + forecast_remaining_rainfall
-buffer = projected_total - threshold
-```
-
-Then it turns that buffer into a simple probability. The model gives more uncertainty when:
-
-- There are more days left in the month.
-- The forecast confidence is low.
-- The historical monthly average is large.
-
-This is a transparent decision-support model, not an official Kalshi price model.
+Use the day-by-day slider to inspect one specific day of the month. The dashboard cards below the slider update to show that day's observed rainfall, observed accumulated total, forecast rainfall, and projected accumulated total.
 
 ## 6. Known limitations
 
